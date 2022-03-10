@@ -18,4 +18,5 @@
 
   <depend>joy</depend>
   <depend>joy_linux</depend>
+  <depend>python3-flask</depend>
 </package>
