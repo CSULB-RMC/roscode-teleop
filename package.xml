@@ -19,4 +19,5 @@
   <depend>joy</depend>
   <depend>joy_linux</depend>
   <depend>python3-flask</depend>
+  <depend>python3-flask-cors</depend>
 </package>

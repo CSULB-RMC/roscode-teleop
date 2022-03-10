@@ -8,6 +8,7 @@ from cv_bridge import CvBridge
 import cv2 as cv
 
 from flask import Flask, render_template, Response
+from flask_cors import CORS
 from threading import Thread, Event
 
 """
@@ -32,8 +33,9 @@ HTML = """
               class="w-1/12 mb-4"
               src="https://beachlunabotics.org/wp-content/uploads/2021/05/LBL_Logo.png"
             />
-            <div class="flex justify-center items-center bg-yellow-300 rounded-md h-12 w-1/6">
-              <span class="font-bold text-white text-xl">start</span>
+            <div id="autonomy-button" onclick="switchAutonomy()" class="flex justify-center items-center bg-yellow-300 rounded-md h-12 w-1/6 space-x-4">
+              <span id="autonomy-status-icon"></span>
+              <span id="autonomy-status" class="font-bold text-white text-xl">start</span>
             </div>
         </div>
 
@@ -51,14 +53,62 @@ HTML = """
       </div>
     </div>
     <script>
+      // subscribers to get data from
       const subscribers = ["obstruction"];
+      const baseAPIURL = `http://127.0.0.1:5000/api`;
+      // interval in milliseconds to continuosly get data
+      const dataInterval = 3000;
+      let isAutonomyRunning = false;
+
+
+      /* Get subscriber data
+      * @param subscriber the string value for the subscriber name
+      * @return promise for subscriber data
+      */
       const getSubscriberData = async (subscriber) => {
         const data = await fetch(
-          `http://127.0.0.1:5000/api/subscriber/${subscriber}`
+          `${baseAPIURL}/subscriber/${subscriber}`
         );
         return await data.text();
       };
 
+      /* Switch the status of the autonomy node (start / stop)
+      */
+      const switchAutonomy = async () => {
+        const data = await fetch(
+          `${baseAPIURL}/set-autonomy/${!isAutonomyRunning}`, {method : "POST"}
+        );
+        updateAutonomyStatus();
+      }
+
+      /* Update/Sync the autonomy node status with the server's autonomy node status
+      */
+      const updateAutonomyStatus = async () =>{
+        const data = await getSubscriberData("autonomy");
+        const aBttn = document.getElementById('autonomy-button');
+        const aStatus = document.getElementById('autonomy-status');
+        const aStatusIcon = document.getElementById('autonomy-status-icon');
+
+        isAutonomyRunning = (data === "True")? true : false;
+
+
+        if (isAutonomyRunning){
+            aBttn.style.background = "red";
+            aStatus.innerHTML = "stop";
+            aStatusIcon.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-stop-fill' viewBox='0 0 16 16'><path d='M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z'/></svg>"
+
+        }
+        else{
+            aBttn.style.background = "green";
+            aStatus.innerHTML = "start";
+            aStatusIcon.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-play-fill' viewBox='0 0 16 16'><path d='m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z'/></svg>"
+        }
+      }
+
+      // get initial autonomy status
+      updateAutonomyStatus();
+
+      // fetch data every dataInterval milliseconds
       setInterval(() => {
         subscribers.map((subscriber) => {
           getSubscriberData(subscriber).then(
@@ -66,7 +116,8 @@ HTML = """
               (document.getElementById(`${subscriber}-data`).innerHTML = data)
           );
         });
-      }, 3000);
+      }, dataInterval);
+
     </script>
   </body>
 </html>
@@ -74,6 +125,7 @@ HTML = """
 
 # flask app
 app = Flask(__name__)
+CORS(app)
 
 # image frame
 frame = None
@@ -82,7 +134,11 @@ frame = None
 # be supported by the rest API should be added to this dictionary with
 # a default starting value of NONE, then the data should be modified
 # in the coresponding callback functions
-SUPPORTED_SUBSCRIBERS = {"obstruction": None, "position": None}
+SUPPORTED_SUBSCRIBERS = {
+    "obstruction": None,
+    "position": None,
+    "autonomy": False,
+}
 
 # Threading event used to keep the stream going (non-blocking)
 event = Event()
@@ -160,11 +216,9 @@ def fetch_frame():
 @app.route("/api/subscriber/<module>")
 def get_subscriber(module: str):
     """API endpoint for getting subscriber data
-    :param module the name of the module as specified in SUPPORTED_SUBSCRIBERS"""
-    return Response(
-        SUPPORTED_SUBSCRIBERS.get(module),
-        headers={"Access-Control-Allow-Origin": "*"},
-    )
+    :param module the name of the module as specified in SUPPORTED_SUBSCRIBERS
+    """
+    return Response(str(SUPPORTED_SUBSCRIBERS.get(module)))
 
 
 @app.route("/api/video-feed")
@@ -173,6 +227,13 @@ def video_feed():
     return Response(
         fetch_frame(), mimetype="multipart/x-mixed-replace; boundary=frame"
     )
+
+
+@app.route("/api/set-autonomy/<status>", methods=["POST"])
+def setAutonomy(status: str):
+    """Set status of autonomy node (True -> start , False -> stop)"""
+    SUPPORTED_SUBSCRIBERS["autonomy"] = True if status == "true" else False
+    return status
 
 
 @app.route("/")
