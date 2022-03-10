@@ -53,7 +53,7 @@ HTML = """
       </div>
     </div>
     <script>
-      // subscribers to get data from
+      // subscribers to get continuous data from
       const subscribers = ["obstruction"];
       const baseAPIURL = `http://127.0.0.1:5000/api`;
       // interval in milliseconds to continuosly get data
