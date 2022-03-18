@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Rover</title>
+  </head>
+  <body>
+    <div class="flex flex-col items-center my-2">
+
+        <div class="flex justify-center items-center space-x-4">
+            <img
+              class="w-1/12 mb-4"
+              src="https://beachlunabotics.org/wp-content/uploads/2021/05/LBL_Logo.png"
+            />
+            <div id="autonomy-button" onclick="switchAutonomy()" class="flex justify-center items-center bg-yellow-300 rounded-md h-12 w-1/6 space-x-4">
+              <span id="autonomy-status-icon"></span>
+              <span id="autonomy-status" class="font-bold text-white text-xl">start</span>
+            </div>
+        </div>
+
+      <img class="w-3/5 aspect-video" src="/api/video-feed" />
+
+    </div>
+    <div class="w-full p-4">
+      <div
+        id="obstruction-container"
+        class="bg-white p-4 w-1/5 rounded-md drop-shadow-xl space-y-2"
+      >
+
+        <h2 class="font-bold text-xl">obstruction</h2>
+        <h4 id="obstruction-data"></h4>
+      </div>
+    </div>
+    <script>
+      // subscribers to get continuous data from
+      const subscribers = ["obstruction"];
+      const baseAPIURL = `http://127.0.0.1:5000/api`;
+      // interval in milliseconds to continuosly get data
+      const dataInterval = 3000;
+      let isAutonomyRunning = false;
+
+
+      /* Get subscriber data
+      * @param subscriber the string value for the subscriber name
+      * @return promise for subscriber data
+      */
+      const getSubscriberData = async (subscriber) => {
+        const data = await fetch(
+          `${baseAPIURL}/subscriber/${subscriber}`
+        );
+        return await data.text();
+      };
+
+      /* Switch the status of the autonomy node (start / stop)
+      */
+      const switchAutonomy = async () => {
+        const data = await fetch(
+          `${baseAPIURL}/set-autonomy/${!isAutonomyRunning}`, {method : "POST"}
+        );
+        updateAutonomyStatus();
+      }
+
+      /* Update/Sync the autonomy node status with the server's autonomy node status
+      */
+      const updateAutonomyStatus = async () =>{
+        const data = await getSubscriberData("autonomy");
+        const aBttn = document.getElementById('autonomy-button');
+        const aStatus = document.getElementById('autonomy-status');
+        const aStatusIcon = document.getElementById('autonomy-status-icon');
+
+        isAutonomyRunning = (data === "True")? true : false;
+
+
+        if (isAutonomyRunning){
+            aBttn.style.background = "red";
+            aStatus.innerHTML = "stop";
+            aStatusIcon.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-stop-fill' viewBox='0 0 16 16'><path d='M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z'/></svg>"
+
+        }
+        else{
+            aBttn.style.background = "green";
+            aStatus.innerHTML = "start";
+            aStatusIcon.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-play-fill' viewBox='0 0 16 16'><path d='m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z'/></svg>"
+        }
+      }
+
+      // get initial autonomy status
+      updateAutonomyStatus();
+
+      // fetch data every dataInterval milliseconds
+      setInterval(() => {
+        subscribers.map((subscriber) => {
+          getSubscriberData(subscriber).then(
+            (data) =>
+              (document.getElementById(`${subscriber}-data`).innerHTML = data)
+          );
+        });
+      }, dataInterval);
+
+    </script>
+  </body>
+</html>
