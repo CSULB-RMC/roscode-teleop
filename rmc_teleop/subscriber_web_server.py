@@ -6,19 +6,18 @@ from std_msgs.msg import Int16MultiArray
 
 from cv_bridge import CvBridge
 import cv2 as cv
+import numpy as np
 
 from flask import Flask, render_template, Response
 from flask_cors import CORS
 from threading import Thread, Event
 
-"""
-We still need to figure out why Docker can't see the templates directory
-for now the HTML Will all be in the same file as a temporary fix
-"""
-
-
 # flask app
-app = Flask(__name__, template_folder="/ros/dev_ws/src/rmc_teleop/resource/templates")
+app = Flask(
+    __name__,
+    template_folder="/ros/dev_ws/src/rmc_teleop/resource/templates",
+    static_folder="/ros/dev_ws/src/rmc_teleop/resource/static",
+)
 CORS(app)
 
 # image frame
@@ -26,11 +25,18 @@ frame = None
 
 # All subscribers that should
 # be supported by the rest API should be added to this dictionary with
-# a default starting value of NONE, then the data should be modified
+# their default starting values, then the data should be modified
 # in the coresponding callback functions
 SUPPORTED_SUBSCRIBERS = {
     "obstruction": None,
-    "position": None,
+    "position_rover": (0.0, 0.0),
+    "position_corner_a": (0.0, 0.0),
+    "position_corner_b": (50.0, 100.0),
+}
+
+# toggable data
+TOGGLES = {
+    "obstruction": True,
     "autonomy": False,
 }
 
@@ -71,6 +77,31 @@ class SystemSubscriber(Node):
         )
 
         frame = self.bridge.imgmsg_to_cv2(msg)
+
+        obstruction_data = SUPPORTED_SUBSCRIBERS.get("obstruction")
+
+        if obstruction_data and TOGGLES.get("obstruction"):
+            # convert array back to cordinate data
+            obstruction_data = [
+                (obstruction_data[i], obstruction_data[i + 1])
+                for i in range(0, len(obstruction_data), 2)
+            ]
+
+            width = frame.shape[1] - 1
+            height = frame.shape[0] - 1
+
+            # add polygon closing points
+            obstruction_data.insert(0, (0, height))
+            obstruction_data.append((width, height))
+
+            overlay = frame.copy()
+
+            contours = np.array(obstruction_data)
+            cv.fillPoly(overlay, pts=[contours], color=(0, 255, 0))
+
+            alpha = 0.4
+            frame = cv.addWeighted(overlay, alpha, frame, 1 - alpha, 0)
+
         ret, buffer = cv.imencode(".jpg", frame)
         frame = buffer.tobytes()
 
@@ -80,7 +111,7 @@ class SystemSubscriber(Node):
     def obstruction_callback(self, msg):
         """Callback method for obstruction data
         :msg the message from the subscriber"""
-        SUPPORTED_SUBSCRIBERS["obstruction"] = str(msg.data)
+        SUPPORTED_SUBSCRIBERS["obstruction"] = msg.data
 
     def position_callback(self, msg):
         """Callback method for position data
@@ -115,6 +146,14 @@ def get_subscriber(module: str):
     return Response(str(SUPPORTED_SUBSCRIBERS.get(module)))
 
 
+@app.route("/api/toggle/<attr>")
+def get_toggle(attr: str):
+    """API endpoint for getting toggle data
+    :param attr the name of the attribute as specified in TOGGLES
+    """
+    return Response(str(TOGGLES.get(attr)))
+
+
 @app.route("/api/video-feed")
 def video_feed():
     """get video feed as image files"""
@@ -123,11 +162,13 @@ def video_feed():
     )
 
 
-@app.route("/api/set-autonomy/<status>", methods=["POST"])
-def setAutonomy(status: str):
-    """Set status of autonomy node (True -> start , False -> stop)"""
-    SUPPORTED_SUBSCRIBERS["autonomy"] = True if status == "true" else False
-    return status
+@app.route("/api/toggle/<attr>", methods=["POST"])
+def toggle_attribute(attr: str):
+    """API endpoint for toggling attributes
+    :param data the name of the module as specified in SUPPORTED_SUBSCRIBERS
+    """
+    TOGGLES[attr] = not TOGGLES.get(attr)
+    return str(TOGGLES.get(attr))
 
 
 @app.route("/")
@@ -136,7 +177,7 @@ def index():
     # docker can't find the template file, so as a temporary fix,
     # the html for the site is hardcoded below
     return render_template("index.html", name=None)
-    #return HTML
+    # return HTML
 
 
 def main(args=None):
