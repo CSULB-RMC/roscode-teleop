@@ -2,15 +2,15 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Empty
-from std_msgs.msg import Byte
+from std_msgs.msg import Int8
 
 from sensor_msgs.msg import Joy
 
 class JoyToTeensyPublisher(Node):
     def __init__(self):
         super().__init__('joyToTeensyPublisher')
-        self.dt_left_pub = self.create_publisher(Byte, 'dt_left', 1)
-        self.dt_right_pub = self.create_publisher(Byte, 'dt_right', 1)
+        self.dt_left_pub = self.create_publisher(Int8, 'dt_left', 1)
+        self.dt_right_pub = self.create_publisher(Int8, 'dt_right', 1)
 
         self.dumper_up_pub = self.create_publisher(Empty, 'dumper_up', 10)
         self.dumper_down_pub = self.create_publisher(Empty, 'dumper_down', 10)
@@ -46,19 +46,21 @@ class JoyToTeensyPublisher(Node):
             self.test_led_pub.publish(Empty())
 
 
-        curbed_left_b = Byte()
-        curbed = int(64+(msg.axes[1]*64))
-        if curbed > 127:
-            curbed = 127
-        curbed_left_b.data = curbed.to_bytes(1, 'little')
+        curbed_left_b = Int8()
+        curbed_left_b.data = int(msg.axes[1]*100)
+        if curbed_left_b.data > 100:
+            curbed_left_b.data = 100
+        if curbed_left_b.data < -100:
+            curbed_left_b.data = -100
         self.dt_left_pub.publish(curbed_left_b)
 
 
-        curbed_right_b = Byte()
-        curbed = int(64+(msg.axes[3]*64))
-        if curbed > 127:
-            curbed = 127
-        curbed_right_b.data = curbed.to_bytes(1, 'little')
+        curbed_right_b = Int8()
+        curbed_right_b.data = int(msg.axes[4]*100)
+        if curbed_right_b.data > 100:
+            curbed_right_b.data = 100
+        if curbed_right_b.data < -100:
+            curbed_right_b.data = -100
         self.dt_right_pub.publish(curbed_right_b)
 
         if msg.buttons[1] == 1:
