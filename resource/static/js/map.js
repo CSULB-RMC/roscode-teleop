@@ -43,7 +43,7 @@ const labels = {
   textfont: {
     color: "white",
     size: 18,
-    family: "Arial",
+    family: "Roboto",
   },
 };
 
