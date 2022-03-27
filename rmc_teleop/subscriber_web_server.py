@@ -12,6 +12,9 @@ from flask import Flask, render_template, Response
 from flask_cors import CORS
 from threading import Thread, Event
 
+# test
+from random import randint, choice
+
 # flask app
 app = Flask(
     __name__,
@@ -32,6 +35,10 @@ SUPPORTED_SUBSCRIBERS = {
     "position_rover": (0.0, 0.0),
     "position_sieve_a": (0.0, 1.0),
     "position_sieve_b": (0.0, 1.5),
+    "speed": "2 m/s",
+    "bucket_ladder": "0°",
+    "sieve_motor": "on",
+    "regcon": "0 m",
 }
 
 # toggable data
