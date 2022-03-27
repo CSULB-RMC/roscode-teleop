@@ -30,8 +30,8 @@ frame = None
 SUPPORTED_SUBSCRIBERS = {
     "obstruction": None,
     "position_rover": (0.0, 0.0),
-    "position_corner_a": (0.0, 0.0),
-    "position_corner_b": (50.0, 100.0),
+    "position_sieve_a": (0.0, 1.0),
+    "position_sieve_b": (0.0, 1.5),
 }
 
 # toggable data
