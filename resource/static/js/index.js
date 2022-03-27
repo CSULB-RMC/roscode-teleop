@@ -1,7 +1,7 @@
-import { toggleAttribute, getToggleStatus } from "./api.js";
+import { toggleAttribute, getToggleStatus, getSubscriberData } from "./api.js";
 
 // subscribers to get continuous data from
-const subscribers = ["obstruction"];
+const subscribers = ["speed", "bucket_ladder", "sieve_motor", "regcon"];
 
 // interval in milliseconds to continuosly get data
 const dataUpdateInterval = 3000;
@@ -43,11 +43,29 @@ const updateAutonomyStatus = async () => {
 // get initial autonomy status
 updateAutonomyStatus();
 
+const sideBarContainer = document.getElementById("sidebar-container");
+
+const setupSideBarContainer = () => {
+  subscribers.map((subscriber) => {
+    getSubscriberData(subscriber).then((data) => {
+      sideBarContainer.innerHTML += `<div class="rounded-xl bg-gray-800 p-4 text-center">
+            <h3 class="text-white font-bold">${subscriber.replaceAll(
+              "_",
+              " "
+            )}</h3>
+            <h3 id="${subscriber}-data" class="text-white font-bold text-xl">${data}</h3>
+          </div>`;
+    });
+  });
+};
+
+setupSideBarContainer();
+
 // fetch data every dataUpdateInterval milliseconds
 setInterval(() => {
   subscribers.map((subscriber) => {
-    getSubscriberData(subscriber).then(
-      (data) => (document.getElementById(`${subscriber}-data`).innerHTML = data)
-    );
+    getSubscriberData(subscriber).then((data) => {
+      document.getElementById(`${subscriber}-data`).innerHTML = data;
+    });
   });
 }, dataUpdateInterval);

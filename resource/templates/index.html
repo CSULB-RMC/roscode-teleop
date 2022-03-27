@@ -25,93 +25,10 @@
           <h3 class="text-white font-bold">map</h3>
           <div id="map" class=""></div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <!-- 0 -->
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <!-- test -->
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <div class="rounded-xl bg-gray-800 p-4 text-center">
-            <h3 class="text-white font-bold">speed</h3>
-            <h3 class="text-white font-bold text-xl">22 m/s</h3>
-          </div>
-          <!-- test -->
-        </div>
+        <div id="sidebar-container" class="grid grid-cols-2 gap-4"></div>
       </div>
       <div class="flex-1 items-center w-full">
+        <img id="stream" />
         <div
           id="hud"
           class="h-screen w-full p-4"
@@ -145,7 +62,7 @@
             <div class="flex space-x-4">
               <div
                 id="overlay-toggle"
-                class="hover:cursor-pointer bg-black opacity-30 rounded-full p-2"
+                class="hover:cursor-pointer bg-black opacity-30 rounded-full p-2 group"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -162,24 +79,11 @@
                     d="m2.125 8.567-1.86.992a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882l-1.86-.992-5.17 2.756a1.5 1.5 0 0 1-1.41 0l-5.17-2.756z"
                   />
                 </svg>
-              </div>
-              <div
-                id="hud-toggle"
-                class="hover:cursor-pointer bg-black opacity-30 rounded-full p-2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="50"
-                  height="50"
-                  fill="white"
-                  class="bi bi-eye-fill"
-                  viewBox="0 0 16 16"
+                <div
+                  class="rounded-xl p-2 m-4 text-white font-bold absolute whitespace-no-wrap right-0 hidden group-hover:inline bg-black"
                 >
-                  <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
-                  <path
-                    d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"
-                  />
-                </svg>
+                  <h3>toggle obstruction overlay</h3>
+                </div>
               </div>
             </div>
           </div>

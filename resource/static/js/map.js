@@ -1,6 +1,7 @@
 import { getSubscriberData } from "./api.js";
 
 const miningAreaStart = 4.39;
+const sieve_thickness = 0.3;
 const xRange = [0, 6.8];
 const yRange = [0, 2.5];
 
@@ -71,13 +72,13 @@ const layout = {
       yref: "y",
       x0: positionSieveA[0],
       y0: positionSieveA[1],
-      x1: 0.5,
+      x1: sieve_thickness,
       y1: positionSieveB[1],
       line: {
-        color: "rgb(50, 171, 96)",
+        color: "rgb(147, 112, 219)",
         width: 3,
       },
-      fillcolor: "rgba(50, 171, 96, 0.6)",
+      fillcolor: "rgba(147, 112, 219, 0.6)",
     },
   ],
   margin: { r: 40, l: 40, b: 40, t: 40 },

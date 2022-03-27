@@ -2,21 +2,23 @@ let hidden = true;
 const sideBar = document.getElementById("sidebar");
 const sideBarToggle = document.getElementById("sidebar-toggle");
 const overlayToggle = document.getElementById("overlay-toggle");
+const autonomyToggle = document.getElementById("autonomy-toggle");
 
 /*close sidebar when clicking anywhere outside of the 
  sidebar,
  sidebar toggle,
- or overlay toggle
+ overlay toggle
+ or autonomy toggle
  */
 
 document.addEventListener("click", (event) => {
   const bounds = event.composedPath();
-  console.log(bounds);
 
   if (
     !(
       bounds.includes(sideBar) ||
       bounds.includes(overlayToggle) ||
+      bounds.includes(autonomyToggle) ||
       bounds.includes(sideBarToggle)
     )
   ) {
