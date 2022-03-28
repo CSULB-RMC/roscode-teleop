@@ -9,6 +9,8 @@ const dataUpdateInterval = 3000;
 // get initial status
 let isAutonomyRunning = false;
 
+let isTeleopControlHidden = true;
+
 // events
 document.getElementById("autonomy-toggle").addEventListener("click", () => {
   toggleAttribute("autonomy").then((res) => {
@@ -23,6 +25,16 @@ document.getElementById("sidebar-toggle").addEventListener("click", () => {
 
 document.getElementById("overlay-toggle").addEventListener("click", () => {
   toggleAttribute("obstruction");
+});
+
+document.getElementById("controls-toggle").addEventListener("click", () => {
+  if (isTeleopControlHidden) {
+    isTeleopControlHidden = false;
+    document.getElementById("teleop-controls").classList.remove("hidden");
+  } else {
+    isTeleopControlHidden = true;
+    document.getElementById("teleop-controls").classList.add("hidden");
+  }
 });
 
 /* Update/Sync the autonomy node status with the server's autonomy node status

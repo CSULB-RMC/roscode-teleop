@@ -3,12 +3,14 @@ const sideBar = document.getElementById("sidebar");
 const sideBarToggle = document.getElementById("sidebar-toggle");
 const overlayToggle = document.getElementById("overlay-toggle");
 const autonomyToggle = document.getElementById("autonomy-toggle");
+const controlsToggle = document.getElementById("controls-toggle");
 
 /*close sidebar when clicking anywhere outside of the 
  sidebar,
  sidebar toggle,
  overlay toggle
- or autonomy toggle
+ autonomy toggle
+ or controls toggle
  */
 
 document.addEventListener("click", (event) => {
@@ -19,6 +21,7 @@ document.addEventListener("click", (event) => {
       bounds.includes(sideBar) ||
       bounds.includes(overlayToggle) ||
       bounds.includes(autonomyToggle) ||
+      bounds.includes(controlsToggle) ||
       bounds.includes(sideBarToggle)
     )
   ) {
