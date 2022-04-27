@@ -47,6 +47,7 @@ class JoyToTeensyPublisher(Node):
         self.dumper_pub.publish(dp_sift_msg)
 
         bl_msg = Int8()
+        """
         if msg.axes[5] < 0: #right trigger
             bl_msg.data = 1 #forward
         if msg.axes[2] < 0: #left trigger
@@ -55,6 +56,17 @@ class JoyToTeensyPublisher(Node):
             bl_msg.data = 3 #stop
         if msg.axes[5] < 0 and msg.axes[2] < 0:
             bl_msg.data = 3 #also stop
+        """
+        if msg.buttons[6] == 1: #Y - dumper up   
+            bl_msg.data = 1 # dumper up
+        if msg.buttons[7] == 1: #A - dumper down
+            bl_msg.data = 0 # dumper down
+        if msg.buttons[7] == 0 and msg.buttons[6] == 0: #if not A or Y
+            bl_msg.data = 3
+        if msg.buttons[6] == 1 and msg.buttons[7] == 1: #if A and Y
+            bl_msg.data = 3
+        
+
         self.bucketladder_digger_pub.publish(bl_msg)
 
 
@@ -69,22 +81,22 @@ class JoyToTeensyPublisher(Node):
             bl_lift_msg.data = 3
         self.bucketladder_lifter_pub.publish(bl_lift_msg)
 
-        """
+        
         bl_tele_msg = Int8()
-        if msg.axes[7] < 0: #dpad up/down
+        if msg.axes[5] < 0: #dpad up/down
             bl_tele_msg.data = 1 #move forward
-        elif msg.axes[7] > 0:
+        elif msg.axes[5] > 0:
             bl_tele_msg.data = 0 #move backward
         else:
             bl_tele_msg.data = 3 #stop
         self.bucketladder_telescope_pub.publish(bl_tele_msg)
-        """
+        
 
 
-        if msg.buttons[6] == 1: #back button is emergency stop everything
+        if msg.buttons[8] == 1: #back button is emergency stop everything
             self.stop_all_pub.publish(Empty())
 
-        if msg.buttons[7] == 1: #start button - toggle led
+        if msg.buttons[9] == 1: #start button - toggle led
             self.test_led_pub.publish(Empty())
 
 
