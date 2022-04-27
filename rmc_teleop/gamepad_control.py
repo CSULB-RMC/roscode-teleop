@@ -69,6 +69,7 @@ class JoyToTeensyPublisher(Node):
             bl_lift_msg.data = 3
         self.bucketladder_lifter_pub.publish(bl_lift_msg)
 
+        """
         bl_tele_msg = Int8()
         if msg.axes[7] < 0: #dpad up/down
             bl_tele_msg.data = 1 #move forward
@@ -77,6 +78,7 @@ class JoyToTeensyPublisher(Node):
         else:
             bl_tele_msg.data = 3 #stop
         self.bucketladder_telescope_pub.publish(bl_tele_msg)
+        """
 
 
         if msg.buttons[6] == 1: #back button is emergency stop everything
@@ -96,7 +98,7 @@ class JoyToTeensyPublisher(Node):
 
 
         curbed_right_b = Int8() #right drivetrain controlled by right thumbstick forward/back
-        curbed_right_b.data = int(msg.axes[4]*100) #ditto as above
+        curbed_right_b.data = int(msg.axes[3]*100) #ditto as above
         if curbed_right_b.data > 100:
             curbed_right_b.data = 100
         if curbed_right_b.data < -100:
