@@ -2,31 +2,25 @@ import rclpy
 from rclpy.node import Node
 
 from std_msgs.msg import Empty
-from std_msgs.msg import Byte
+from std_msgs.msg import Int8
 
 from sensor_msgs.msg import Joy
 
 class JoyToTeensyPublisher(Node):
     def __init__(self):
         super().__init__('joyToTeensyPublisher')
-        self.dt_left_pub = self.create_publisher(Byte, 'dt_left', 1)
-        self.dt_right_pub = self.create_publisher(Byte, 'dt_right', 1)
+        self.dt_left_pub = self.create_publisher(Int8, 'dt_left', 1)
+        self.dt_right_pub = self.create_publisher(Int8, 'dt_right', 1)
 
-        self.dumper_up_pub = self.create_publisher(Empty, 'dumper_up', 10)
-        self.dumper_down_pub = self.create_publisher(Empty, 'dumper_down', 10)
+        self.dumper_pub = self.create_publisher(Int8, 'dumper_control', 10)
+        self.bucketladder_lifter_pub = self.create_publisher(Int8, 'bucketladder_lifter_control', 10)
+        self.bucketladder_telescope_pub = self.create_publisher(Int8, 'bucketladder_telescope_control', 10)
+        self.bucketladder_digger_pub = self.create_publisher(Int8, 'bucketladder_digger_control', 10)
+
         self.stop_all_pub = self.create_publisher(Empty, 'stop_all_arduino', 10)
 
         self.test_led_pub = self.create_publisher(Empty, 'test_led', 10)
-
-        self.auger_up_pub = self.create_publisher(Empty, 'auger_up', 10)
-        self.auger_down_pub = self.create_publisher(Empty, 'auger_down', 10)
-
-        self.auger_dig_pub = self.create_publisher(Empty, 'auger_dig', 10)
-        self.auger_dig_rev_pub = self.create_publisher(Empty, 'auger_dig_reverse', 10)
-
-        self.telescope_forward_pub = self.create_publisher(Empty, 'telescope_forward', 10)
-        self.telescope_backward_pub = self.create_publisher(Empty, 'telescope_backward', 10)
-
+        
         self.joy_sub = self.create_subscription(Joy, 'joy', self.joy_callback, 10)
         self.joy_sub #supress unused var warning
     
@@ -34,50 +28,83 @@ class JoyToTeensyPublisher(Node):
         self.get_logger().info("JOY CALLBACK! %s" % msg)
 
         # Y/A button 
-        if msg.buttons[2] == 1: #Y - dumper up
-            self.dumper_up_pub.publish(Empty())
+        dp_msg = Int8()
+        if msg.buttons[3] == 1: #Y - dumper up   
+            dp_msg.data = 1 # dumper up
         if msg.buttons[0] == 1: #A - dumper down
-            self.dumper_down_pub.publish(Empty())
+            dp_msg.data = 0 # dumper down
+        if msg.buttons[0] == 0 and msg.buttons[3] == 0: #if not A or Y
+            dp_msg.data = 3
+        if msg.buttons[0] == 1 and msg.buttons[3] == 1: #if A and Y
+            dp_msg.data = 3
+        self.dumper_pub.publish(dp_msg)
 
-        if msg.buttons[8] == 1: #back button is emergency stop everything
+        dp_sift_msg = Int8()
+        if msg.buttons[5] == 1: #right bumper
+            dp_sift_msg.data = 4 #sift on
+        elif msg.buttons[5] == 0:
+            dp_sift_msg.data = 5 #sift off
+        self.dumper_pub.publish(dp_sift_msg)
+
+        bl_msg = Int8()
+        if msg.axes[5] < 0: #right trigger
+            bl_msg.data = 1 #forward
+        if msg.axes[2] < 0: #left trigger
+            bl_msg.data = 0 #backward
+        if msg.axes[5] > 0 and msg.axes[2] > 0:
+            bl_msg.data = 3 #stop
+        if msg.axes[5] < 0 and msg.axes[2] < 0:
+            bl_msg.data = 3 #also stop
+        self.bucketladder_digger_pub.publish(bl_msg)
+
+
+        bl_lift_msg = Int8()
+        if msg.buttons[2] == 1: # X button
+            bl_lift_msg.data = 1 #move up
+        if msg.buttons[1] == 1: # B button
+            bl_lift_msg.data = 0 #move down
+        if msg.buttons[2] == 0 and msg.buttons[1] == 0:
+            bl_lift_msg.data = 3 #stop
+        if msg.buttons[2] == 1 and msg.buttons[1] == 1:
+            bl_lift_msg.data = 3
+        self.bucketladder_lifter_pub.publish(bl_lift_msg)
+
+        bl_tele_msg = Int8()
+        if msg.axes[7] < 0: #dpad up/down
+            bl_tele_msg.data = 1 #move forward
+        elif msg.axes[7] > 0:
+            bl_tele_msg.data = 0 #move backward
+        else:
+            bl_tele_msg.data = 3 #stop
+        self.bucketladder_telescope_pub.publish(bl_tele_msg)
+
+
+        if msg.buttons[6] == 1: #back button is emergency stop everything
             self.stop_all_pub.publish(Empty())
 
-        if msg.buttons[9] == 1: #start button - toggle led
+        if msg.buttons[7] == 1: #start button - toggle led
             self.test_led_pub.publish(Empty())
 
 
-        curbed_left_b = Byte()
-        curbed = int(64+(msg.axes[1]*64))
-        if curbed > 127:
-            curbed = 127
-        curbed_left_b.data = curbed.to_bytes(1, 'little')
+        curbed_left_b = Int8() #left drivetrain controlled by left thumbstick forward/back
+        curbed_left_b.data = int(msg.axes[1]*100) #make the axes value from -100 to 100
+        if curbed_left_b.data > 100:
+            curbed_left_b.data = 100
+        if curbed_left_b.data < -100:
+            curbed_left_b.data = -100
         self.dt_left_pub.publish(curbed_left_b)
 
 
-        curbed_right_b = Byte()
-        curbed = int(64+(msg.axes[3]*64))
-        if curbed > 127:
-            curbed = 127
-        curbed_right_b.data = curbed.to_bytes(1, 'little')
+        curbed_right_b = Int8() #right drivetrain controlled by right thumbstick forward/back
+        curbed_right_b.data = int(msg.axes[4]*100) #ditto as above
+        if curbed_right_b.data > 100:
+            curbed_right_b.data = 100
+        if curbed_right_b.data < -100:
+            curbed_right_b.data = -100
         self.dt_right_pub.publish(curbed_right_b)
 
-        if msg.buttons[1] == 1:
-            self.auger_up_pub.publish(Empty())
 
-        if msg.buttons[3] == 1:
-            self.auger_down_pub.publish(Empty())
 
-        if msg.buttons[4] == 1:
-            self.telescope_forward_pub.publish(Empty())
-
-        if msg.buttons[5] == 1:
-            self.telescope_backward_pub.publish(Empty())
-
-        if msg.buttons[6] == 1:
-            self.auger_dig_pub.publish(Empty())
-
-        if msg.buttons[7] == 1:
-            self.auger_dig_rev_pub.publish(Empty())
 
 def main(args=None):
     rclpy.init(args=args)
