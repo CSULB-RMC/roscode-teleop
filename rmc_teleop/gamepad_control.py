@@ -13,8 +13,7 @@ class JoyToTeensyPublisher(Node):
         self.dt_right_pub = self.create_publisher(Int8, 'dt_right', 1)
 
         self.dumper_pub = self.create_publisher(Int8, 'dumper_control', 10)
-        self.bucketladder_lifter_pub = self.create_publisher(Int8, 'bucketladder_lifter_control', 10)
-        self.bucketladder_telescope_pub = self.create_publisher(Int8, 'bucketladder_telescope_control', 10)
+        self.bucketladder_control_pub = self.create_publisher(Int8, 'bucketladder_control', 10)
         self.bucketladder_digger_pub = self.create_publisher(Int8, 'bucketladder_digger_control', 10)
 
         self.stop_all_pub = self.create_publisher(Empty, 'stop_all_arduino', 10)
@@ -79,17 +78,17 @@ class JoyToTeensyPublisher(Node):
             bl_lift_msg.data = 3 #stop
         if msg.buttons[2] == 1 and msg.buttons[1] == 1:
             bl_lift_msg.data = 3
-        self.bucketladder_lifter_pub.publish(bl_lift_msg)
+        self.bucketladder_control_pub.publish(bl_lift_msg)
 
         
         bl_tele_msg = Int8()
         if msg.axes[5] < 0: #dpad up/down
-            bl_tele_msg.data = 1 #move forward
+            bl_tele_msg.data = 4 #move forward
         elif msg.axes[5] > 0:
-            bl_tele_msg.data = 0 #move backward
+            bl_tele_msg.data = 5 #move backward
         else:
-            bl_tele_msg.data = 3 #stop
-        self.bucketladder_telescope_pub.publish(bl_tele_msg)
+            bl_tele_msg.data = 6 #stop
+        self.bucketladder_control_pub.publish(bl_tele_msg)
         
 
 
