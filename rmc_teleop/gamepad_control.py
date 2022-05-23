@@ -7,6 +7,8 @@ from std_msgs.msg import Int8
 from sensor_msgs.msg import Joy
 
 class JoyToTeensyPublisher(Node):
+    currentCamera = 0
+    cameraButPressed = False
     def __init__(self):
         super().__init__('joyToTeensyPublisher')
         self.dt_left_pub = self.create_publisher(Int8, 'dt_left', 1)
@@ -19,6 +21,8 @@ class JoyToTeensyPublisher(Node):
         self.stop_all_pub = self.create_publisher(Empty, 'stop_all_arduino', 10)
 
         self.test_led_pub = self.create_publisher(Empty, 'test_led', 10)
+
+        self.camera_id_pub = self.create_publisher(Int8, 'camera_id', 10)
         
         self.joy_sub = self.create_subscription(Joy, 'joy', self.joy_callback, 10)
         self.joy_sub #supress unused var warning
@@ -79,6 +83,17 @@ class JoyToTeensyPublisher(Node):
         if msg.buttons[2] == 1 and msg.buttons[1] == 1:
             bl_lift_msg.data = 3
         self.bucketladder_control_pub.publish(bl_lift_msg)
+
+        cam_id_msg = Int8()
+        if msg.buttons[4] == 1:
+            if self.cameraButPressed == False:
+                self.cameraButPressed = True
+                self.currentCamera = self.currentCamera + 1
+                self.currentCamera = self.currentCamera % 3
+                cam_id_msg.data = self.currentCamera
+                self.camera_id_pub.publish(cam_id_msg)
+        else:
+            self.cameraButPressed = False
 
         
         bl_tele_msg = Int8()
